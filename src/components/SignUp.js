@@ -45,10 +45,7 @@ const SignUp = () => {
         isValid,
       }) => (
         <View style={styles.root}>
-          <Pressable
-            onPress={() => {
-              setStatus(true);
-            }}>
+          <Pressable>
             <View style={styles.inputBox}>
               <Icon name="user" size={28} style={styles.icon} />
               <TextInput
@@ -59,6 +56,7 @@ const SignUp = () => {
                 value={values.name}
               />
             </View>
+
             {status ? (
               <View>
                 {errors.name && (
@@ -78,7 +76,13 @@ const SignUp = () => {
               style={{...styles.input, marginLeft: 3}}
             />
           </View>
-          {errors.email && <Text style={styles.errors}>{errors.email}</Text>}
+          {status ? (
+            <View>
+              {errors.email && (
+                <Text style={styles.errors}>{errors.email}</Text>
+              )}
+            </View>
+          ) : null}
 
           <View style={styles.inputBox}>
             <Icon name="lock" size={28} style={styles.icon} />
@@ -106,10 +110,25 @@ const SignUp = () => {
               </Pressable>
             )}
           </View>
-          {errors.password && (
-            <Text style={styles.errors}>{errors.password}</Text>
-          )}
-          <Pressable disabled={!isValid} onPress={handleSubmit}>
+          {status ? (
+            <View>
+              {errors.password && (
+                <Text style={styles.errors}>{errors.password}</Text>
+              )}
+            </View>
+          ) : null}
+          <Pressable
+            style={{
+              // borderWidth: 1,
+              width: '50%',
+              marginHorizontal: '25%',
+              marginTop: 10,
+            }}
+            // disabled={!isValid}
+            onPress={() => {
+              setStatus(true);
+              handleSubmit();
+            }}>
             <View style={styles.btn}>
               <Text
                 style={{
@@ -126,7 +145,7 @@ const SignUp = () => {
             style={{
               flexDirection: 'row',
               justifyContent: 'space-evenly',
-              marginTop: 5,
+              // marginTop: 5,
             }}>
             <Image
               style={{width: 100, height: 100}}
@@ -149,7 +168,7 @@ const SignUp = () => {
             style={{
               flexDirection: 'row',
               justifyContent: 'center',
-              marginTop: 10,
+              // marginTop: 10,
             }}>
             <Text>By creating an account, you agree to Amazon's</Text>
             <Text style={{color: '#7ba6e5'}}>Term's of use</Text>
@@ -186,13 +205,13 @@ const styles = StyleSheet.create({
     width: '70%',
   },
   btn: {
-    width: '50%',
-    marginHorizontal: '25%',
-    marginVertical: 20,
+    // width: '50%',
+    // marginHorizontal: '25%',
+    // marginVertical: 20,
     backgroundColor: '#ff9900',
     borderRadius: 15,
     paddingHorizontal: 10,
-    marginTop: 20,
+    // marginTop: 20,
   },
   secure: {
     marginLeft: 10,
