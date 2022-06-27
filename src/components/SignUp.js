@@ -59,13 +59,10 @@ const SignUp = () => {
                 value={values.name}
               />
             </View>
-            {status ? (
-              <View>
-                {errors.name && (
-                  <Text style={styles.errors}>{errors.name}</Text>
-                )}
-              </View>
-            ) : null}
+
+            <View>
+              {errors.name && <Text style={styles.errors}>{errors.name}</Text>}
+            </View>
           </Pressable>
 
           <View style={styles.inputBox}>
