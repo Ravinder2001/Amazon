@@ -8,13 +8,17 @@ import {
   Pressable,
   Image,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Email from 'react-native-vector-icons/Entypo';
 import * as yup from 'yup';
 import {Formik} from 'formik';
+import {openDatabase} from 'react-native-sqlite-storage';
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
+const db = openDatabase({
+  name: 'userList',
+});
 const SignUp = () => {
   const [secure, setSecure] = useState(false);
   const [status, setStatus] = useState(false);
@@ -26,14 +30,51 @@ const SignUp = () => {
       .required('Email address is required'),
     password: yup
       .string()
-      .min(8, ({min}) => `'password must be min ${min} Charater'`)
+      .min(8, ({min}) => `Password must be min ${min} Charater`)
       .required('Password is required'),
   });
+
+  const createTable = () => {
+    db.transaction(txn => {
+      txn.executeSql(
+        'CREATE TABLE IF NOT EXISTS List(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(20), email VARCHAR(20), password VARCHAR(20))',
+        [],
+        () => {
+          console.log('Table Created Succesfully'),
+            err => {
+              console.log(err.message);
+            };
+        },
+      );
+    });
+  };
+  const addCategory = data => {
+    // if (!category) {
+    //   alert('Enter Category');
+    //   return false;
+    // }
+
+    db.transaction(txn => {
+      txn.executeSql(
+        'INSERT INTO List (name, email, password) VALUES (?,?,?)',
+        [data.name, data.email, data.password],
+        () => {
+          alert(`${data.name} added succesfully`);
+        },
+        err => {
+          console.log(err.message);
+        },
+      );
+    });
+  };
+  useEffect(() => {
+    createTable();
+  }, []);
   return (
     <Formik
       initialValues={{name: '', email: '', password: ''}}
       validateOnMount={true}
-      onSubmit={values => alert(JSON.stringify(values))}
+      onSubmit={values => addCategory(values)}
       validationSchema={schema}>
       {({
         handleChange,
@@ -45,10 +86,7 @@ const SignUp = () => {
         isValid,
       }) => (
         <View style={styles.root}>
-          <Pressable
-            onPress={() => {
-              setStatus(true);
-            }}>
+          <Pressable>
             <View style={styles.inputBox}>
               <Icon name="user" size={28} style={styles.icon} />
               <TextInput
@@ -60,9 +98,13 @@ const SignUp = () => {
               />
             </View>
 
-            <View>
-              {errors.name && <Text style={styles.errors}>{errors.name}</Text>}
-            </View>
+            {status ? (
+              <View>
+                {errors.name && (
+                  <Text style={styles.errors}>{errors.name}</Text>
+                )}
+              </View>
+            ) : null}
           </Pressable>
 
           <View style={styles.inputBox}>
@@ -75,7 +117,13 @@ const SignUp = () => {
               style={{...styles.input, marginLeft: 3}}
             />
           </View>
-          {errors.email && <Text style={styles.errors}>{errors.email}</Text>}
+          {status ? (
+            <View>
+              {errors.email && (
+                <Text style={styles.errors}>{errors.email}</Text>
+              )}
+            </View>
+          ) : null}
 
           <View style={styles.inputBox}>
             <Icon name="lock" size={28} style={styles.icon} />
@@ -103,10 +151,26 @@ const SignUp = () => {
               </Pressable>
             )}
           </View>
-          {errors.password && (
-            <Text style={styles.errors}>{errors.password}</Text>
-          )}
-          <Pressable disabled={!isValid} onPress={handleSubmit}>
+          {status ? (
+            <View>
+              {errors.password && (
+                <Text style={styles.errors}>{errors.password}</Text>
+              )}
+            </View>
+          ) : null}
+          <Pressable
+            style={{
+              // borderWidth: 1,
+              width: '50%',
+              marginHorizontal: '25%',
+              marginTop: 10,
+            }}
+            // disabled={!isValid}
+            onPress={() => {
+              setStatus(true);
+              handleSubmit();
+              // store();
+            }}>
             <View style={styles.btn}>
               <Text
                 style={{
@@ -123,7 +187,7 @@ const SignUp = () => {
             style={{
               flexDirection: 'row',
               justifyContent: 'space-evenly',
-              marginTop: 5,
+              // marginTop: 5,
             }}>
             <Image
               style={{width: 100, height: 100}}
@@ -146,7 +210,7 @@ const SignUp = () => {
             style={{
               flexDirection: 'row',
               justifyContent: 'center',
-              marginTop: 10,
+              // marginTop: 10,
             }}>
             <Text>By creating an account, you agree to Amazon's</Text>
             <Text style={{color: '#7ba6e5'}}>Term's of use</Text>
@@ -183,13 +247,13 @@ const styles = StyleSheet.create({
     width: '70%',
   },
   btn: {
-    width: '50%',
-    marginHorizontal: '25%',
-    marginVertical: 20,
+    // width: '50%',
+    // marginHorizontal: '25%',
+    // marginVertical: 20,
     backgroundColor: '#ff9900',
     borderRadius: 15,
     paddingHorizontal: 10,
-    marginTop: 20,
+    // marginTop: 20,
   },
   secure: {
     marginLeft: 10,
