@@ -10,71 +10,58 @@ import {
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Phone from 'react-native-vector-icons/Ionicons';
 import Email from 'react-native-vector-icons/Entypo';
 import * as yup from 'yup';
 import {Formik} from 'formik';
-import {openDatabase} from 'react-native-sqlite-storage';
+
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
-const db = openDatabase({
-  name: 'userList',
-});
+
 const SignUp = () => {
   const [secure, setSecure] = useState(false);
   const [status, setStatus] = useState(false);
+  const phoneRegExp =
+    /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
   const schema = yup.object().shape({
     name: yup.string().required('Name is required'),
     email: yup
       .string()
       .email('Please enter valid email')
       .required('Email address is required'),
-    password: yup
+    phone: yup
       .string()
-      .min(8, ({min}) => `Password must be min ${min} Charater`)
-      .required('Password is required'),
+      .required('Phone number is required')
+      .matches(phoneRegExp, 'Phone number is not valid')
+      .min(10, 'Mobile number should be of 10 digits')
+      .max(10, 'to long'),
   });
-
-  const createTable = () => {
-    db.transaction(txn => {
-      txn.executeSql(
-        'CREATE TABLE IF NOT EXISTS List(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(20), email VARCHAR(20), password VARCHAR(20))',
-        [],
-        () => {
-          console.log('Table Created Succesfully'),
-            err => {
-              console.log(err.message);
-            };
+  async function store(e) {
+    try {
+      console.log('i am here', e.name);
+      await fetch('http://192.168.19.69:4000/users', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-type': 'application/json',
         },
-      );
-    });
-  };
-  const addCategory = data => {
-    // if (!category) {
-    //   alert('Enter Category');
-    //   return false;
-    // }
-
-    db.transaction(txn => {
-      txn.executeSql(
-        'INSERT INTO List (name, email, password) VALUES (?,?,?)',
-        [data.name, data.email, data.password],
-        () => {
-          alert(`${data.name} added succesfully`);
-        },
-        err => {
-          console.log(err.message);
-        },
-      );
-    });
-  };
-  useEffect(() => {
-    createTable();
-  }, []);
+        body: JSON.stringify({
+          name: e.name,
+          email: e.email,
+          phone: e.phone,
+        }),
+      }).then(() => {
+        console.log('Succesfully Stored');
+      });
+    } catch (err) {
+      console.log('CATCH=>', err.message);
+    }
+  }
   return (
     <Formik
       initialValues={{name: '', email: '', password: ''}}
       validateOnMount={true}
-      onSubmit={values => addCategory(values)}
+      onSubmit={values => store(values)}
       validationSchema={schema}>
       {({
         handleChange,
@@ -126,16 +113,17 @@ const SignUp = () => {
           ) : null}
 
           <View style={styles.inputBox}>
-            <Icon name="lock" size={28} style={styles.icon} />
+            <Phone name="call" size={28} style={styles.icon} />
             <TextInput
-              onChangeText={handleChange('password')}
-              onBlur={handleBlur('password')}
-              value={values.password}
-              placeholder="password"
-              secureTextEntry={!secure}
+              onChangeText={handleChange('phone')}
+              onBlur={handleBlur('phone')}
+              value={values.phone}
+              placeholder="phone"
+              keyboardType="numeric"
+              maxLength={10}
               style={{...styles.input, marginLeft: 10}}
             />
-            {secure ? (
+            {/* {secure ? (
               <Pressable
                 onPress={() => {
                   setSecure(false);
@@ -149,12 +137,12 @@ const SignUp = () => {
                 }}>
                 <Email name="eye-with-line" size={28} style={styles.secure} />
               </Pressable>
-            )}
+            )} */}
           </View>
           {status ? (
             <View>
-              {errors.password && (
-                <Text style={styles.errors}>{errors.password}</Text>
+              {errors.phone && (
+                <Text style={styles.errors}>{errors.phone}</Text>
               )}
             </View>
           ) : null}
@@ -169,7 +157,6 @@ const SignUp = () => {
             onPress={() => {
               setStatus(true);
               handleSubmit();
-              // store();
             }}>
             <View style={styles.btn}>
               <Text

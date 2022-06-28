@@ -14,16 +14,14 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import Email from 'react-native-vector-icons/Entypo';
 import * as yup from 'yup';
 import {Formik} from 'formik';
-import {openDatabase} from 'react-native-sqlite-storage';
+
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
-const db = openDatabase({
-  name: 'userList',
-});
+
 const SignIn = () => {
   const [secure, setSecure] = useState(false);
   const [status, setStatus] = useState(false);
-  const [users, setUsers] = useState([]);
+
   const schema = yup.object().shape({
     email: yup
       .string()
@@ -31,40 +29,13 @@ const SignIn = () => {
       .required('Email address is required'),
     password: yup.string().required('Password is required'),
   });
-  const getList = () => {
-    db.transaction(txn => {
-      txn.executeSql(
-        'SELECT * FROM List',
-        [],
-        (sqlTxn, res) => {
-          let len = res.rows.length;
 
-          if (len > 0) {
-            let results = [];
-            for (let i = 0; i < len; i++) {
-              let item = res.rows.item(i);
-              results.push({id: item.id, name: item.name,email:item.email,password:item.password});
-            }
 
-            setUsers(results);
-            console.log('List get Succesfully');
-          }
-        },
-        err => {
-          console.log(err.message);
-        },
-      );
-    });
-  };
-  // useEffect(() => {
-  //   getList();
-  // });
-  console.log(users);
   return (
     <Formik
       initialValues={{name: '', email: '', password: ''}}
       validateOnMount={true}
-      onSubmit={getList}
+      onSubmit={values => alert(JSON.stringify(values))}
       validationSchema={schema}>
       {({
         handleChange,
@@ -141,9 +112,9 @@ const SignIn = () => {
 
           <Pressable
             onPress={() => {
-              // setStatus(true);
-              // handleSubmit();
-              getList();
+              setStatus(true);
+              handleSubmit();
+            
             }}>
             <View style={styles.btn}>
               <Text
