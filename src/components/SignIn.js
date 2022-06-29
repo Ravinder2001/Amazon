@@ -7,35 +7,56 @@ import {
   Dimensions,
   Pressable,
   Image,
-  Switch,
+  ToastAndroid,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Phone from 'react-native-vector-icons/Ionicons';
 import Email from 'react-native-vector-icons/Entypo';
 import * as yup from 'yup';
 import {Formik} from 'formik';
+import OtpModal from './OtpModal';
 
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
 
 const SignIn = () => {
-  const [secure, setSecure] = useState(false);
+  const [modal, setModal] = useState(false);
   const [status, setStatus] = useState(false);
+  const phoneRegExp =
+    /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
 
   const schema = yup.object().shape({
-    email: yup
+    phone: yup
       .string()
-      .email('Please enter valid email')
-      .required('Email address is required'),
-    password: yup.string().required('Password is required'),
+      .required('Phone number is required')
+      .matches(phoneRegExp, 'Phone number is not valid')
+      .min(10, 'Mobile number should be of 10 digits')
+      .max(10, 'to long'),
   });
+  async function userData(e) {
+    console.log(e.phone);
 
-
+    fetch(`http://192.168.19.69:4000/userData?phone=${e.phone}`)
+      .then(async response => {
+        if (response.status == 200) {
+          const data = await response.json();
+          console.log(data);
+          ToastAndroid.show('User founded !', ToastAndroid.SHORT);
+          setModal(true);
+        } else {
+          ToastAndroid.show('User not founded !', ToastAndroid.SHORT);
+        }
+      })
+      .catch(error => {
+        console.error('There was an error!', error);
+      });
+  }
+  // useEffect(() => {}, [modal]);
   return (
     <Formik
-      initialValues={{name: '', email: '', password: ''}}
+      initialValues={{phone: ''}}
       validateOnMount={true}
-      onSubmit={values => alert(JSON.stringify(values))}
+      onSubmit={values => userData(values)}
       validationSchema={schema}>
       {({
         handleChange,
@@ -48,52 +69,21 @@ const SignIn = () => {
       }) => (
         <View style={styles.root}>
           <View style={styles.inputBox}>
-            <Email name="email" size={28} style={styles.icon} />
+            <Phone name="call" size={28} style={styles.icon} />
             <TextInput
-              onChangeText={handleChange('email')}
-              onBlur={handleBlur('email')}
-              value={values.email}
-              placeholder="email"
-              style={{...styles.input, marginLeft: 3}}
-            />
-          </View>
-          {status ? (
-            <View>
-              {errors.email && (
-                <Text style={styles.errors}>{errors.email}</Text>
-              )}
-            </View>
-          ) : null}
-          <View style={styles.inputBox}>
-            <Icon name="lock" size={28} style={styles.icon} />
-            <TextInput
-              onChangeText={handleChange('password')}
-              onBlur={handleBlur('password')}
-              value={values.password}
-              placeholder="password"
-              secureTextEntry={!secure}
+              onChangeText={handleChange('phone')}
+              onBlur={handleBlur('phone')}
+              value={values.phone}
+              placeholder="Phone"
+              keyboardType="numeric"
+              maxLength={10}
               style={{...styles.input, marginLeft: 10}}
             />
-            {secure ? (
-              <Pressable
-                onPress={() => {
-                  setSecure(false);
-                }}>
-                <Email name="eye" size={28} style={styles.secure} />
-              </Pressable>
-            ) : (
-              <Pressable
-                onPress={() => {
-                  setSecure(true);
-                }}>
-                <Email name="eye-with-line" size={28} style={styles.secure} />
-              </Pressable>
-            )}
           </View>
           {status ? (
             <View>
-              {errors.password && (
-                <Text style={styles.errors}>{errors.password}</Text>
+              {errors.phone && (
+                <Text style={styles.errors}>{errors.phone}</Text>
               )}
             </View>
           ) : null}
@@ -112,9 +102,9 @@ const SignIn = () => {
 
           <Pressable
             onPress={() => {
+              console.log('clcick');
               setStatus(true);
               handleSubmit();
-            
             }}>
             <View style={styles.btn}>
               <Text
@@ -128,6 +118,7 @@ const SignIn = () => {
               </Text>
             </View>
           </Pressable>
+
           <View
             style={{
               flexDirection: 'row',
@@ -160,6 +151,7 @@ const SignIn = () => {
             <Text>By creating an account, you agree to Amazon's</Text>
             <Text style={{color: '#7ba6e5'}}>Term's of use</Text>
           </View>
+          <OtpModal status={modal} data={setModal} />
         </View>
       )}
     </Formik>

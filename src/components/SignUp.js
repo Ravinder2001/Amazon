@@ -7,6 +7,7 @@ import {
   Dimensions,
   Pressable,
   Image,
+  ToastAndroid,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -18,7 +19,7 @@ import {Formik} from 'formik';
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
 
-const SignUp = () => {
+const SignUp = ({navigation}) => {
   const [secure, setSecure] = useState(false);
   const [status, setStatus] = useState(false);
   const phoneRegExp =
@@ -41,17 +42,24 @@ const SignUp = () => {
       console.log('i am here', e.name);
       await fetch('http://192.168.19.69:4000/users', {
         method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-type': 'application/json',
-        },
         body: JSON.stringify({
           name: e.name,
           email: e.email,
           phone: e.phone,
         }),
-      }).then(() => {
-        console.log('Succesfully Stored');
+        headers: {
+          Accept: 'application/json',
+          'Content-type': 'application/json',
+        },
+      }).then(e => {
+        if (e.status == 200) {
+          navigation.navigate('SignIn');
+          ToastAndroid.show('User Stored successfully !', ToastAndroid.SHORT);
+        } else if (e.status == 300) {
+          ToastAndroid.show('Email already exists', ToastAndroid.SHORT);
+        } else if (e.status == 400) {
+          ToastAndroid.show('Phone number already exists', ToastAndroid.SHORT);
+        }
       });
     } catch (err) {
       console.log('CATCH=>', err.message);
