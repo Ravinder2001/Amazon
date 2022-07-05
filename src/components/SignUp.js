@@ -15,6 +15,8 @@ import Phone from 'react-native-vector-icons/Ionicons';
 import Email from 'react-native-vector-icons/Entypo';
 import * as yup from 'yup';
 import {Formik} from 'formik';
+import auth from '@react-native-firebase/auth';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
 
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
@@ -64,6 +66,45 @@ const SignUp = ({navigation}) => {
     } catch (err) {
       console.log('CATCH=>', err.message);
     }
+  }
+  const [data, setData] = useState([]);
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId:
+        '504834481456-i1fmlm7lju873fj0kvsahata18pld8tj.apps.googleusercontent.com',
+    });
+  }, [data]);
+  async function onGoogleButtonPress() {
+    // Get the users ID token
+    const {idToken} = await GoogleSignin.signIn();
+
+    // Create a Google credential with the token
+    const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+    await GoogleSignin.hasPlayServices();
+    const userInfo = await GoogleSignin.signIn();
+    // Sign-in the user with the credential
+    const user_sign_in = auth().signInWithCredential(googleCredential);
+    // user_sign_in
+    //   .then(user => {
+    //     console.log(user.user.displayName);
+    //     setData({
+    //       name: user.user.displayName,
+    //       email: user.user.email,
+    //       image: user.user.photoURL,
+    //     });
+    //   })
+    //   .catch(err => {
+    //     console.log(err.message);
+    //   });
+    console.log(userInfo.user);
+  }
+  function logout() {
+    auth()
+      .signOut()
+      .then(() => {
+        console.log('User signed out!');
+        // setData([]);
+      });
   }
   return (
     <Formik
@@ -184,10 +225,20 @@ const SignUp = ({navigation}) => {
               justifyContent: 'space-evenly',
               // marginTop: 5,
             }}>
-            <Image
-              style={{width: 100, height: 100}}
-              source={{uri: 'https://img.icons8.com/bubbles/344/gmail-new.png'}}
-            />
+            <Pressable
+              onPress={() =>
+                onGoogleButtonPress().then(() =>
+                  console.log('Signed in with Google!'),
+                )
+              }>
+              <Image
+                style={{width: 100, height: 100}}
+                source={{
+                  uri: 'https://img.icons8.com/bubbles/344/gmail-new.png',
+                }}
+              />
+            </Pressable>
+
             <Image
               style={{width: 100, height: 100}}
               source={{
@@ -201,6 +252,12 @@ const SignUp = ({navigation}) => {
               }}
             />
           </View>
+          <Button
+            title="logout"
+            onPress={() => {
+              logout();
+            }}
+          />
           <View
             style={{
               flexDirection: 'row',
