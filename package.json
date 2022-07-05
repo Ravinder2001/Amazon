@@ -22,6 +22,7 @@
     "formik": "^2.2.9",
     "react": "17.0.2",
     "react-native": "^0.68.1",
+    "react-native-fbsdk-next": "^10.0.0",
     "react-native-gesture-handler": "^2.4.2",
     "react-native-pager-view": "^5.4.24",
     "react-native-reanimated": "^2.8.0",

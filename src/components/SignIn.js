@@ -22,21 +22,16 @@ const height = Dimensions.get('window').height;
 const SignIn = () => {
   const [modal, setModal] = useState(false);
   const [status, setStatus] = useState(false);
-  const phoneRegExp =
-    /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
-
   const schema = yup.object().shape({
-    phone: yup
+    email: yup
       .string()
-      .required('Phone number is required')
-      .matches(phoneRegExp, 'Phone number is not valid')
-      .min(10, 'Mobile number should be of 10 digits')
-      .max(10, 'to long'),
+      .email('Please enter valid email')
+      .required('Email address is required'),
   });
   async function userData(e) {
-    console.log(e.phone);
+    console.log(e);
 
-    fetch(`http://192.168.19.69:4000/userData?phone=${e.phone}`)
+    fetch(`http://192.168.19.51:4000/userData?email=${e.email}`)
       .then(async response => {
         if (response.status == 200) {
           const data = await response.json();
@@ -54,7 +49,7 @@ const SignIn = () => {
   // useEffect(() => {}, [modal]);
   return (
     <Formik
-      initialValues={{phone: ''}}
+      initialValues={{email: ''}}
       validateOnMount={true}
       onSubmit={values => userData(values)}
       validationSchema={schema}>
@@ -69,21 +64,19 @@ const SignIn = () => {
       }) => (
         <View style={styles.root}>
           <View style={styles.inputBox}>
-            <Phone name="call" size={28} style={styles.icon} />
+            <Email name="email" size={28} style={styles.icon} />
             <TextInput
-              onChangeText={handleChange('phone')}
-              onBlur={handleBlur('phone')}
-              value={values.phone}
-              placeholder="Phone"
-              keyboardType="numeric"
-              maxLength={10}
-              style={{...styles.input, marginLeft: 10}}
+              onChangeText={handleChange('email')}
+              onBlur={handleBlur('email')}
+              value={values.email}
+              placeholder="Email"
+              style={{...styles.input, marginLeft: 3}}
             />
           </View>
           {status ? (
             <View>
-              {errors.phone && (
-                <Text style={styles.errors}>{errors.phone}</Text>
+              {errors.email && (
+                <Text style={styles.errors}>{errors.email}</Text>
               )}
             </View>
           ) : null}

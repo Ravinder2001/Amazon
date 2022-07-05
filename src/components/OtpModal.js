@@ -7,6 +7,7 @@ import {
   Dimensions,
   View,
   Button,
+  TextInput,
 } from 'react-native';
 
 const height = Dimensions.get('window').height;
@@ -27,13 +28,23 @@ const OtpModal = ({status, data}) => {
         }}>
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Text style={styles.modalText}>Hello World!</Text>
+            <Text style={styles.modalText}>OTP successfully sended!</Text>
             <Button
               title="click me"
               onPress={() => {
                 data(false);
               }}
             />
+            {/* <TextInput
+              keyboardType="numeric"
+              maxLength={1}
+              style={{borderWidth: 1}}
+            />
+            <TextInput
+              keyboardType="numeric"
+              maxLength={1}
+              style={{borderWidth: 1}}
+            /> */}
           </View>
         </View>
       </Modal>
@@ -72,8 +83,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   modalText: {
-    marginBottom: 15,
-    textAlign: 'center',
+    fontSize: 18,
+    color: 'green',
+    textAlign: 'left',
   },
 });
 

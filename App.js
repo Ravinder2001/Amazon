@@ -11,8 +11,8 @@ const App = () => {
     <View style={{flex: 1}}>
       <NavigationContainer>
         {/* <Navigations /> */}
-        {/* <Authorization /> */}
-        <Demo/>
+        <Authorization />
+        {/* <Demo/> */}
       </NavigationContainer>
     </View>
   );

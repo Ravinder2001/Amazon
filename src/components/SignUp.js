@@ -17,13 +17,15 @@ import * as yup from 'yup';
 import {Formik} from 'formik';
 import auth from '@react-native-firebase/auth';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import OtpModal from './OtpModal';
 
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
 
 const SignUp = ({navigation}) => {
-  const [secure, setSecure] = useState(false);
+  const [secure, setSecure] = useState(true);
   const [status, setStatus] = useState(false);
+  const [modal, setModal] = useState(false);
   const phoneRegExp =
     /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
   const schema = yup.object().shape({
@@ -32,22 +34,23 @@ const SignUp = ({navigation}) => {
       .string()
       .email('Please enter valid email')
       .required('Email address is required'),
-    phone: yup
+    password: yup
       .string()
-      .required('Phone number is required')
-      .matches(phoneRegExp, 'Phone number is not valid')
-      .min(10, 'Mobile number should be of 10 digits')
-      .max(10, 'to long'),
+      .required('Password is required')
+      .matches(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/,
+        'Must Contain 8 Characters, One Uppercase, One Lowercase, One Number and One Special Case Character',
+      ),
   });
   async function store(e) {
     try {
       console.log('i am here', e.name);
-      await fetch('http://192.168.19.69:4000/users', {
+      await fetch('http://192.168.19.51:4000/users', {
         method: 'POST',
         body: JSON.stringify({
           name: e.name,
           email: e.email,
-          phone: e.phone,
+          password: e.password,
         }),
         headers: {
           Accept: 'application/json',
@@ -55,8 +58,9 @@ const SignUp = ({navigation}) => {
         },
       }).then(e => {
         if (e.status == 200) {
-          navigation.navigate('SignIn');
+          // navigation.navigate('SignIn');
           ToastAndroid.show('User Stored successfully !', ToastAndroid.SHORT);
+          setModal(true);
         } else if (e.status == 300) {
           ToastAndroid.show('Email already exists', ToastAndroid.SHORT);
         } else if (e.status == 400) {
@@ -149,7 +153,7 @@ const SignUp = ({navigation}) => {
               onChangeText={handleChange('email')}
               onBlur={handleBlur('email')}
               value={values.email}
-              placeholder="email"
+              placeholder="Email"
               style={{...styles.input, marginLeft: 3}}
             />
           </View>
@@ -162,36 +166,35 @@ const SignUp = ({navigation}) => {
           ) : null}
 
           <View style={styles.inputBox}>
-            <Phone name="call" size={28} style={styles.icon} />
+            <Phone name="lock-closed" size={28} style={styles.icon} />
             <TextInput
-              onChangeText={handleChange('phone')}
-              onBlur={handleBlur('phone')}
-              value={values.phone}
-              placeholder="phone"
-              keyboardType="numeric"
-              maxLength={10}
+              onChangeText={handleChange('password')}
+              onBlur={handleBlur('password')}
+              value={values.password}
+              placeholder="Password"
+              secureTextEntry={secure}
               style={{...styles.input, marginLeft: 10}}
             />
-            {/* {secure ? (
+            {secure ? (
               <Pressable
                 onPress={() => {
                   setSecure(false);
                 }}>
-                <Email name="eye" size={28} style={styles.secure} />
+                <Email name="eye-with-line" size={28} style={styles.secure} />
               </Pressable>
             ) : (
               <Pressable
                 onPress={() => {
                   setSecure(true);
                 }}>
-                <Email name="eye-with-line" size={28} style={styles.secure} />
+                <Email name="eye" size={28} style={styles.secure} />
               </Pressable>
-            )} */}
+            )}
           </View>
           {status ? (
             <View>
-              {errors.phone && (
-                <Text style={styles.errors}>{errors.phone}</Text>
+              {errors.password && (
+                <Text style={styles.errors}>{errors.password}</Text>
               )}
             </View>
           ) : null}
@@ -238,26 +241,13 @@ const SignUp = ({navigation}) => {
                 }}
               />
             </Pressable>
-
-            <Image
-              style={{width: 100, height: 100}}
-              source={{
-                uri: 'https://img.icons8.com/bubbles/344/facebook-new.png',
-              }}
-            />
-            <Image
-              style={{width: 100, height: 100}}
-              source={{
-                uri: 'https://img.icons8.com/bubbles/344/instagram-new--v2.png',
-              }}
-            />
           </View>
-          <Button
+          {/* <Button
             title="logout"
             onPress={() => {
               logout();
             }}
-          />
+          /> */}
           <View
             style={{
               flexDirection: 'row',
@@ -267,9 +257,11 @@ const SignUp = ({navigation}) => {
             <Text>By creating an account, you agree to Amazon's</Text>
             <Text style={{color: '#7ba6e5'}}>Term's of use</Text>
           </View>
+          <OtpModal status={true} data={setModal} />
         </View>
       )}
     </Formik>
+    
   );
 };
 const styles = StyleSheet.create({
