@@ -257,7 +257,7 @@ const SignUp = ({navigation}) => {
             <Text>By creating an account, you agree to Amazon's</Text>
             <Text style={{color: '#7ba6e5'}}>Term's of use</Text>
           </View>
-          <OtpModal status={true} data={setModal} />
+          <OtpModal status={modal} data={setModal} />
         </View>
       )}
     </Formik>

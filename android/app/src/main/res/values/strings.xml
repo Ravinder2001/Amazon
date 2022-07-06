@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Amazon</string>
-    <string name="facebook_app_id">388612820037352</string>
-    <string name="facebook_client_token">f84c67d49b72e73a1e412137e12b07a3</string>
+  <string name="facebook_app_id">713581046389979</string>
+<string name="fb_login_protocol_scheme">fb713581046389979</string>
+
+<string name="facebook_client_token">856af6d453629e363b1f1f223bcf5131</string>
 </resources>
