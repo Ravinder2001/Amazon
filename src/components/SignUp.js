@@ -18,7 +18,10 @@ import {Formik} from 'formik';
 import auth from '@react-native-firebase/auth';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import OtpModal from './OtpModal';
+import {LoginManager, AccessToken} from 'react-native-fbsdk-next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const otpGenerator = require('otp-generator');
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
 
@@ -26,6 +29,7 @@ const SignUp = ({navigation}) => {
   const [secure, setSecure] = useState(true);
   const [status, setStatus] = useState(false);
   const [modal, setModal] = useState(false);
+  const [user, setUser] = useState(null);
   const phoneRegExp =
     /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
   const schema = yup.object().shape({
@@ -34,14 +38,32 @@ const SignUp = ({navigation}) => {
       .string()
       .email('Please enter valid email')
       .required('Email address is required'),
-    password: yup
+    // password: yup
+    //   .string()
+    //   .required('Password is required')
+    //   .matches(
+    //     /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/,
+    //     'Must Contain 8 Characters, One Uppercase, One Lowercase, One Number and One Special Case Character',
+    //   ),
+    mobile: yup
       .string()
-      .required('Password is required')
-      .matches(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/,
-        'Must Contain 8 Characters, One Uppercase, One Lowercase, One Number and One Special Case Character',
-      ),
+      .required('Phone number is required')
+      .matches(phoneRegExp, 'This is not valid Mobile Number'),
   });
+  async function send(e) {
+    var val = Math.floor(1000 + Math.random() * 9000);
+    console.log(val);
+
+    console.log(`otp sended to ${e}`);
+    await AsyncStorage.setItem('OTP', JSON.stringify(val));
+    // setModal(true);
+    // https://www.fast2sms.com/dev/wallet?authorization=1LlpkzCdRT0czdc5VPS2VVkn8f93kagTF9iw1l8OSDDU4IegwDAQiRnIwe97 -----> for checking your wallet address
+    await fetch(
+      `https://www.fast2sms.com/dev/bulkV2?authorization=1LlpkzCdRT0czdc5VPS2VVkn8f93kagTF9iw1l8OSDDU4IegwDAQiRnIwe97&message=Your OTP for Amazon app is ${val}&language=english&route=q&numbers=${e}`,
+    ).then(function () {
+      setModal(true);
+    });
+  }
   async function store(e) {
     try {
       console.log('i am here', e.name);
@@ -60,7 +82,6 @@ const SignUp = ({navigation}) => {
         if (e.status == 200) {
           // navigation.navigate('SignIn');
           ToastAndroid.show('User Stored successfully !', ToastAndroid.SHORT);
-          setModal(true);
         } else if (e.status == 300) {
           ToastAndroid.show('Email already exists', ToastAndroid.SHORT);
         } else if (e.status == 400) {
@@ -78,6 +99,36 @@ const SignUp = ({navigation}) => {
         '504834481456-i1fmlm7lju873fj0kvsahata18pld8tj.apps.googleusercontent.com',
     });
   }, [data]);
+  function facebook() {
+    LoginManager.logInWithPermissions(['public_profile', 'email']).then(
+      async function (result) {
+        if (result.isCancelled) {
+          alert('Login Cancelled ' + JSON.stringify(result));
+        } else {
+          alert(
+            'Login success with  permisssions: ' +
+              result.grantedPermissions.toString(),
+          );
+          const data = await AccessToken.getCurrentAccessToken();
+
+          if (!data) {
+            throw 'Something went wrong obtaining access token';
+          }
+
+          // Create a Firebase credential with the AccessToken
+          const facebookCredential = auth.FacebookAuthProvider.credential(
+            data.accessToken,
+          );
+
+          // Sign-in the user with the credential
+          console.log(auth().signInWithCredential(facebookCredential));
+        }
+      },
+      function (error) {
+        alert('Login failed with error: ' + error);
+      },
+    );
+  }
   async function onGoogleButtonPress() {
     // Get the users ID token
     const {idToken} = await GoogleSignin.signIn();
@@ -112,9 +163,12 @@ const SignUp = ({navigation}) => {
   }
   return (
     <Formik
-      initialValues={{name: '', email: '', password: ''}}
+      initialValues={{name: '', email: '', mobile: ''}}
       validateOnMount={true}
-      onSubmit={values => store(values)}
+      onSubmit={values => {
+        setUser(values);
+        send(values.mobile);
+      }}
       validationSchema={schema}>
       {({
         handleChange,
@@ -165,7 +219,7 @@ const SignUp = ({navigation}) => {
             </View>
           ) : null}
 
-          <View style={styles.inputBox}>
+          {/* <View style={styles.inputBox}>
             <Phone name="lock-closed" size={28} style={styles.icon} />
             <TextInput
               onChangeText={handleChange('password')}
@@ -197,6 +251,26 @@ const SignUp = ({navigation}) => {
                 <Text style={styles.errors}>{errors.password}</Text>
               )}
             </View>
+          ) : null} */}
+          <View style={styles.inputBox}>
+            <Email name="mobile" size={28} style={styles.icon} />
+            <TextInput
+              onChangeText={handleChange('mobile')}
+              onBlur={handleBlur('mobile')}
+              value={values.mobile}
+              placeholder="Mobile"
+              keyboardType="numeric"
+              maxLength={10}
+              minLength={10}
+              style={{...styles.input, marginLeft: 3}}
+            />
+          </View>
+          {status ? (
+            <View>
+              {errors.mobile && (
+                <Text style={styles.errors}>{errors.mobile}</Text>
+              )}
+            </View>
           ) : null}
           <Pressable
             style={{
@@ -208,7 +282,9 @@ const SignUp = ({navigation}) => {
             // disabled={!isValid}
             onPress={() => {
               setStatus(true);
+              // send()
               handleSubmit();
+              console.log('clicked');
             }}>
             <View style={styles.btn}>
               <Text
@@ -237,7 +313,15 @@ const SignUp = ({navigation}) => {
               <Image
                 style={{width: 100, height: 100}}
                 source={{
-                  uri: 'https://img.icons8.com/bubbles/344/gmail-new.png',
+                  uri: 'https://img.icons8.com/color/344/gmail-new.png',
+                }}
+              />
+            </Pressable>
+            <Pressable onPress={facebook}>
+              <Image
+                style={{width: 100, height: 100}}
+                source={{
+                  uri: 'https://img.icons8.com/fluency/344/facebook-new.png',
                 }}
               />
             </Pressable>
@@ -261,7 +345,6 @@ const SignUp = ({navigation}) => {
         </View>
       )}
     </Formik>
-    
   );
 };
 const styles = StyleSheet.create({

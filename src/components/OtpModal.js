@@ -8,14 +8,34 @@ import {
   View,
   Button,
   TextInput,
+  ToastAndroid,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const height = Dimensions.get('window').height;
 const OtpModal = ({status, data}) => {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [text, setText] = useState('');
+  async function getOtp() {
+    const code = await AsyncStorage.getItem('OTP');
+    setOtp(code);
+  }
   useEffect(() => {
     setModalVisible(status);
+    getOtp();
   }, [status]);
-  const [modalVisible, setModalVisible] = useState(false);
+  console.log(otp);
+  function check() {
+    console.log(otp, text);
+    if (otp == text) {
+      ToastAndroid.show('OTP verified', ToastAndroid.SHORT);
+      data(false);
+    } else {
+      ToastAndroid.show('Invalid Otp', ToastAndroid.SHORT);
+    }
+  }
+
   return (
     <View style={styles.centeredView}>
       <Modal
@@ -29,12 +49,18 @@ const OtpModal = ({status, data}) => {
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <Text style={styles.modalText}>OTP successfully sended!</Text>
-            <Button
-              title="click me"
-              onPress={() => {
-                data(false);
+            <TextInput
+              style={{
+                borderBottomWidth: 1,
+                // width: '30%',
+                margin: 10,
+                padding: 10,
+                fontSize: 25,
               }}
+              onChangeText={e => setText(e)}
+              maxLength={4}
             />
+            <Button title="Submit" onPress={check} />
             {/* <TextInput
               keyboardType="numeric"
               maxLength={1}

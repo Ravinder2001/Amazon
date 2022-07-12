@@ -1,44 +1,19 @@
-import React, { useState } from 'react';
-import { Button, TextInput } from 'react-native';
+import {View, Text, Button} from 'react-native';
+import React from 'react';
 import auth from '@react-native-firebase/auth';
 
-function Demo() {
-  // If null, no SMS has been sent
-  const [confirm, setConfirm] = useState(null);
-
-  const [code, setCode] = useState('');
-
-  // Handle the button press
-  async function signInWithPhoneNumber(phoneNumber) {
-    console.log(phoneNumber)
-    const confirmation = await auth().signInWithPhoneNumber(phoneNumber);
-    console.log(confirmation)
-    setConfirm(confirmation);
-  }
-
-  async function confirmCode() {
-    try {
-      console.log(code)
-      await confirm.confirm(code);
-    } catch (error) {
-      console.log('Invalid code.');
-    }
-  }
-
-  if (!confirm) {
-    return (
-      <Button
-        title="Phone Number Sign In"
-        onPress={() => signInWithPhoneNumber('+919756726341')}
-      />
-    );
-  }
-
+const Demo = () => {
   return (
-    <>
-      <TextInput value={code} onChangeText={text => setCode(text)} />
-      <Button title="Confirm Code" onPress={() => confirmCode()} />
-    </>
+    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+      <Text>Facebook Login </Text>
+      <Button
+        title={'Login with Facebook'}
+        onPress={() => {
+          
+        }}
+      />
+    </View>
   );
-}
-export default Demo
+};
+
+export default Demo;
