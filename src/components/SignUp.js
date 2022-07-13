@@ -28,7 +28,7 @@ const height = Dimensions.get('window').height;
 const SignUp = ({navigation}) => {
   const [secure, setSecure] = useState(true);
   const [status, setStatus] = useState(false);
-  const [modal, setModal] = useState(false);
+  const [modal, setModal] = useState(true);
   const [user, setUser] = useState(null);
   const phoneRegExp =
     /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
