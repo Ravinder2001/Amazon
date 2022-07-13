@@ -21,6 +21,7 @@ import OtpModal from './OtpModal';
 import {LoginManager, AccessToken} from 'react-native-fbsdk-next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const axios = require('axios').default;
 const otpGenerator = require('otp-generator');
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
@@ -28,7 +29,7 @@ const height = Dimensions.get('window').height;
 const SignUp = ({navigation}) => {
   const [secure, setSecure] = useState(true);
   const [status, setStatus] = useState(false);
-  const [modal, setModal] = useState(true);
+  const [modal, setModal] = useState(false);
   const [user, setUser] = useState(null);
   const phoneRegExp =
     /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
@@ -52,17 +53,28 @@ const SignUp = ({navigation}) => {
   });
   async function send(e) {
     var val = Math.floor(1000 + Math.random() * 9000);
-    console.log(val);
+    console.log(e);
 
     console.log(`otp sended to ${e}`);
     await AsyncStorage.setItem('OTP', JSON.stringify(val));
+    axios
+      .get(`http://192.168.19.51:4000/sendOTP?number=${e}`)
+      .then(function (response) {
+        // handle success
+        if(response.status==200){
+           setModal(true);
+        }
+        console.log(response.data);
+      })
+      .catch(function (error) {
+        // handle error
+        console.log(error);
+      })
+      .then(function () {
+        // always executed
+      });
     // setModal(true);
     // https://www.fast2sms.com/dev/wallet?authorization=1LlpkzCdRT0czdc5VPS2VVkn8f93kagTF9iw1l8OSDDU4IegwDAQiRnIwe97 -----> for checking your wallet address
-    await fetch(
-      `https://www.fast2sms.com/dev/bulkV2?authorization=1LlpkzCdRT0czdc5VPS2VVkn8f93kagTF9iw1l8OSDDU4IegwDAQiRnIwe97&message=Your OTP for Amazon app is ${val}&language=english&route=q&numbers=${e}`,
-    ).then(function () {
-      setModal(true);
-    });
   }
   async function store(e) {
     try {
@@ -166,6 +178,7 @@ const SignUp = ({navigation}) => {
       initialValues={{name: '', email: '', mobile: ''}}
       validateOnMount={true}
       onSubmit={values => {
+        // setModal(true);
         setUser(values);
         send(values.mobile);
       }}
@@ -281,7 +294,7 @@ const SignUp = ({navigation}) => {
             }}
             // disabled={!isValid}
             onPress={() => {
-              setStatus(true);
+              // setStatus(true);
               // send()
               handleSubmit();
               console.log('clicked');
