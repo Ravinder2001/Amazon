@@ -15,7 +15,8 @@ const Navigations = () => {
   const Tab = createBottomTabNavigator();
   const size = 27;
   return (
-    <NavigationContainer>
+    <View>
+      {/* <NavigationContainer> */}
       <StatusBar backgroundColor="#8fe7ce" />
       <Tab.Navigator
         screenOptions={{
@@ -83,7 +84,8 @@ const Navigations = () => {
           }}
         />
       </Tab.Navigator>
-    </NavigationContainer>
+      {/* </NavigationContainer> */}
+    </View>
   );
 };
 

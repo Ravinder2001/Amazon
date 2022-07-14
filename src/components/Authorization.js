@@ -22,7 +22,7 @@ const Authorization = () => {
     Animated.timing(animation, {
       toValue: 1,
       duration: 500,
-      useNativeDriver:false
+      useNativeDriver: false,
     }).start();
   }, []);
   const widthAnimation = animation.interpolate({

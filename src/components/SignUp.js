@@ -31,6 +31,7 @@ const SignUp = ({navigation}) => {
   const [status, setStatus] = useState(false);
   const [modal, setModal] = useState(false);
   const [user, setUser] = useState(null);
+
   const phoneRegExp =
     /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
   const schema = yup.object().shape({
@@ -52,27 +53,27 @@ const SignUp = ({navigation}) => {
       .matches(phoneRegExp, 'This is not valid Mobile Number'),
   });
   async function send(e) {
-    var val = Math.floor(1000 + Math.random() * 9000);
-    console.log(e);
+    setModal(true);
+    console.log('mobile', e);
+    // axios
+    //   .get(`http://192.168.19.51:4000/sendOTP?number=${e}`)
+    //   .then(async function (response) {
+    //     // handle success
+    //     if(response.status==200){
+    //       let OTP = response.data
+    //       await AsyncStorage.setItem('OTP', JSON.stringify(OTP));
+    //       console.log("otp",OTP);
+    //        setModal(true);
+    //     }
 
-    console.log(`otp sended to ${e}`);
-    await AsyncStorage.setItem('OTP', JSON.stringify(val));
-    axios
-      .get(`http://192.168.19.51:4000/sendOTP?number=${e}`)
-      .then(function (response) {
-        // handle success
-        if(response.status==200){
-           setModal(true);
-        }
-        console.log(response.data);
-      })
-      .catch(function (error) {
-        // handle error
-        console.log(error);
-      })
-      .then(function () {
-        // always executed
-      });
+    //   })
+    //   .catch(function (error) {
+    //     // handle error
+    //     console.log(error);
+    //   })
+    //   .then(function () {
+    //     // always executed
+    //   });
     // setModal(true);
     // https://www.fast2sms.com/dev/wallet?authorization=1LlpkzCdRT0czdc5VPS2VVkn8f93kagTF9iw1l8OSDDU4IegwDAQiRnIwe97 -----> for checking your wallet address
   }
@@ -295,8 +296,8 @@ const SignUp = ({navigation}) => {
             // disabled={!isValid}
             onPress={() => {
               // setStatus(true);
-              // send()
-              handleSubmit();
+              send('12');
+              // handleSubmit();
               console.log('clicked');
             }}>
             <View style={styles.btn}>
@@ -354,7 +355,7 @@ const SignUp = ({navigation}) => {
             <Text>By creating an account, you agree to Amazon's</Text>
             <Text style={{color: '#7ba6e5'}}>Term's of use</Text>
           </View>
-          <OtpModal status={modal} data={setModal} />
+          <OtpModal status={modal} data={setModal} navigation={navigation} />
         </View>
       )}
     </Formik>

@@ -15,17 +15,11 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const height = Dimensions.get('window').height;
-const OtpModal = ({status, data}) => {
-  const ref1 = useRef(null);
-  const ref2 = useRef(null);
-  const ref3 = useRef(null);
-  const ref4 = useRef(null);
+const OtpModal = ({status, data, navigation}) => {
+  const [pin, setPin] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [otp, setOtp] = useState('');
-  const [pin1, setPin1] = useState('');
-  const [pin2, setPin2] = useState('');
-  const [pin3, setPin3] = useState('');
-  const [pin4, setPin4] = useState('');
+
   async function getOtp() {
     const code = await AsyncStorage.getItem('OTP');
     setOtp(code);
@@ -34,44 +28,20 @@ const OtpModal = ({status, data}) => {
     setModalVisible(status);
     getOtp();
   }, [status]);
-  console.log(otp);
-  function check() {
-    var res = '';
-    res += pin1 + pin2 + pin3 + pin4;
-    console.log(res);
-    if (otp == res) {
+  console.log('otp', otp);
+  async function check() {
+    if (otp == pin) {
+      await AsyncStorage.setItem('userValid', JSON.stringify(true)
+      
+      
+      );
+      navigation.navigate('Home');
       ToastAndroid.show('OTP verified', ToastAndroid.SHORT);
       data(false);
     } else {
       ToastAndroid.show('Invalid Otp', ToastAndroid.SHORT);
     }
   }
-  // console.log('pins', pin1);
-  // if (pin1 != '') {
-  //   ref2.current.focus();
-  // }
-  // if (pin2 != '') {
-  //   ref3.current.focus();
-  // }
-  // if (pin3 != '') {
-  //   ref4.current.focus();
-  // }
-
-  const handleKeyDown2 = e => {
-    if (e.nativeEvent.key === 'Backspace') {
-      ref1.current.focus();
-    }
-  };
-  const handleKeyDown3 = e => {
-    if (e.nativeEvent.key === 'Backspace') {
-      ref2.current.focus();
-    }
-  };
-  const handleKeyDown4 = e => {
-    if (e.nativeEvent.key === 'Backspace') {
-      ref3.current.focus();
-    }
-  };
 
   return (
     <View style={styles.centeredView}>
@@ -114,45 +84,12 @@ const OtpModal = ({status, data}) => {
             </Text>
             <View style={{flexDirection: 'row'}}>
               <TextInput
-                ref={ref1}
                 style={styles.otpinput}
                 onChangeText={e => {
-                  setPin1(e);
-                  console.log('sss', pin1);
+                  setPin(e);
                 }}
                 keyboardType="numeric"
-                maxLength={1}
-              />
-              <TextInput
-                ref={ref2}
-                style={styles.otpinput}
-                onChangeText={e => setPin2(e)}
-                onKeyPress={handleKeyDown2}
-                // returnKeyType="next"
-                keyboardType="numeric"
-                // onSubmitEditing={() => {
-                //   ref1.focus();
-                // }}
-                maxLength={1}
-              />
-              <TextInput
-                ref={ref3}
-                style={styles.otpinput}
-                onChangeText={e => setPin3(e)}
-                onKeyPress={handleKeyDown3}
-                keyboardType="numeric"
-                maxLength={1}
-              />
-              <TextInput
-                ref={ref4}
-                style={styles.otpinput}
-                onChangeText={e => {
-                  setPin4(e);
-                  console.log('here', pin4);
-                }}
-                keyboardType="numeric"
-                onKeyPress={handleKeyDown4}
-                maxLength={1}
+                maxLength={6}
               />
             </View>
             <Pressable onPress={check}>
@@ -216,10 +153,12 @@ const styles = StyleSheet.create({
   },
   otpinput: {
     borderBottomWidth: 2,
-    // width: '30%',
+    width: '50%',
     margin: 10,
-    padding: 10,
+    // padding: 10,
     fontSize: 25,
+    textAlign: 'center',
+    letterSpacing: 10,
   },
   subheading: {
     fontSize: 15,
